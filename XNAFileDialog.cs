@@ -55,21 +55,21 @@
  * The dialog will be updating this to the user's current directory, so that we
  * can remember where the user actually wants to save/load their data.
  *
- * Set OnReceivedPath to whatever method you want to use the given path.
- * For example, you can have a Save(string) and Load(string) depending on
- * whether or not you want the given dialog to save to or load from the result.
- * Note that OnReceivedPath can be NULL if the user closes the window instead of
- * providing a path!
- *
  * Lastly, call Open and a dialog window will show up on the screen. It will be
  * using the Game.Update and Game.Draw methods, so unlike the FileDialog we are
  * NOT halting your program! The dialog essentially runs like a standalone
  * window running inside your program, so both your game AND the dialog can
  * receive input and draw to the screen. Prepare your interface accordingly!
  *
+ * The receivedPath parameter is a callback for us to send the selected path.
+ * For example, you can have a Save(string) and Load(string) depending on
+ * whether or not you want the given dialog to save to or load from the result.
+ * Note that the result can be NULL if the user closes the window instead of
+ * providing a path!
+ *
  * Once the user has provided a file path or closed the window, the dialog will
- * dispose itself and call OnReceivedPath, either with the given path or with
- * NULL. Aside from the DialogAssets, no content/component management is needed.
+ * dispose itself and call receivedPath either with the given path or with NULL.
+ * Aside from the DialogAssets, no content/component management is needed.
  */
 #endregion
 
@@ -86,7 +86,6 @@ public sealed class XNAFileDialog : DrawableGameComponent
 	#region Public Static Variables
 
 	public static string CurrentDirectory;
-	public static event Action<string> OnReceivedPath;
 
 	#endregion
 
@@ -130,7 +129,7 @@ public sealed class XNAFileDialog : DrawableGameComponent
 		game = null;
 	}
 
-	public static void Open()
+	public static void Open(Action<string> receivedPath)
 	{
 		if (instance != null)
 		{
@@ -140,11 +139,11 @@ public sealed class XNAFileDialog : DrawableGameComponent
 		{
 			throw new ArgumentNullException("Need a starting directory!");
 		}
-		if (OnReceivedPath == null)
+		if (receivedPath == null)
 		{
 			throw new ArgumentNullException("Need a callback for file paths!");
 		}
-		instance = new XNAFileDialog(game);
+		instance = new XNAFileDialog(game, receivedPath);
 		game.Components.Add(instance);
 	}
 
@@ -152,7 +151,12 @@ public sealed class XNAFileDialog : DrawableGameComponent
 
 	#region FileDialog Instance
 
-	private XNAFileDialog(Game game) : base(game) { }
+	private Action<string> fileAction;
+
+	private XNAFileDialog(Game game, Action<string> action) : base(game)
+	{
+		fileAction = action;
+	}
 
 	public override void Update(GameTime gameTime)
 	{
@@ -163,7 +167,7 @@ public sealed class XNAFileDialog : DrawableGameComponent
 		string finalPath = Environment.GetEnvironmentVariable("Placeholder~");
 		if (finalPath != null)
 		{
-			OnReceivedPath(finalPath);
+			fileAction(finalPath);
 			Dispose();
 			game.Components.Remove(this);
 			instance = null;

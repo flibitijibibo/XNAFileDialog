@@ -33,13 +33,11 @@ class Program : Game
 		KeyboardState state = Keyboard.GetState();
 		if (state.IsKeyDown(Keys.S))
 		{
-			XNAFileDialog.OnReceivedPath += SaveFile;
-			XNAFileDialog.Open();
+			XNAFileDialog.Open(SaveFile);
 		}
 		else if (state.IsKeyDown(Keys.L))
 		{
-			XNAFileDialog.OnReceivedPath += LoadFile;
-			XNAFileDialog.Open();
+			XNAFileDialog.Open(LoadFile);
 		}
 	}
 
@@ -56,7 +54,6 @@ class Program : Game
 
 	private void SaveFile(string path)
 	{
-		XNAFileDialog.OnReceivedPath -= SaveFile;
 		if (path == null)
 		{
 			Console.WriteLine("User cancelled save!");
@@ -67,7 +64,6 @@ class Program : Game
 
 	private void LoadFile(string path)
 	{
-		XNAFileDialog.OnReceivedPath -= LoadFile;
 		if (path == null)
 		{
 			Console.WriteLine("User cancelled load!");
