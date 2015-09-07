@@ -44,6 +44,7 @@
  *
  * Feel free to modify the example assets to work with your game's art style.
  */
+#endregion
 
 #region API Documentation
 /* The XNAFileDialog API is entirely static:
@@ -98,6 +99,8 @@ public sealed class XNAFileDialog : DrawableGameComponent
 	private static XNAFileDialog instance;
 
 	#endregion
+
+	#region Public Static Methods
 
 	public static void LoadDialogAssets(Game game, string path)
 	{
