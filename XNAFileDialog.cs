@@ -95,8 +95,24 @@ public sealed class XNAFileDialog : DrawableGameComponent
 	private static Game game;
 	private static SpriteBatch spriteBatch;
 	private static Texture2D spriteSheet;
+	private static Rectangle[] spriteRects;
 	private static SpriteFont spriteFont;
 	private static XNAFileDialog instance;
+
+	private static readonly string[] properties = new string[]
+	{
+		"OuterColor",
+		"OuterBorderCorner",
+		"OuterBorder",
+		"InnerColor",
+		"InnerBorderCorner",
+		"InnerBorder",
+		"Home",
+		"File",
+		"Folder",
+		"Cancel",
+		"Select"
+	};
 
 	#endregion
 
@@ -108,6 +124,7 @@ public sealed class XNAFileDialog : DrawableGameComponent
 		spriteBatch = new SpriteBatch(game.GraphicsDevice);
 		spriteSheet = game.Content.Load<Texture2D>(Path.Combine(path, "FileDialogTexture"));
 		spriteFont = game.Content.Load<SpriteFont>(Path.Combine(path, "FileDialogFont"));
+		spriteRects = new Rectangle[properties.Length];
 		using (FileStream fileIn = File.OpenRead(Path.Combine(path, "FileDialogSprites.txt")))
 		using (StreamReader reader = new StreamReader(fileIn))
 		{
@@ -118,9 +135,21 @@ public sealed class XNAFileDialog : DrawableGameComponent
 			) {
 				int separator = line.IndexOf(':');
 				string parameter = line.Substring(0, separator);
-				string value = line.Substring(separator + 1);
-				System.Console.WriteLine(parameter + " " + value);
-				// TODO: Map rectangles to widget components
+				string[] value = line.Substring(separator + 1).Split(',');
+				Rectangle result = new Rectangle(
+					int.Parse(value[0]),
+					int.Parse(value[1]),
+					int.Parse(value[2]),
+					int.Parse(value[3])
+				);
+				for (int i = 0; i < properties.Length; i += 1)
+				{
+					if (parameter == properties[i])
+					{
+						spriteRects[i] = result;
+						break;
+					}
+				}
 			}
 		}
 	}
@@ -155,10 +184,21 @@ public sealed class XNAFileDialog : DrawableGameComponent
 	#region FileDialog Instance
 
 	private Action<string> fileAction;
+	private string[] currentDirectories;
+	private string[] currentFiles;
+	private string[] currentPath;
 
 	private XNAFileDialog(Game game, Action<string> action) : base(game)
 	{
 		fileAction = action;
+		GenerateDirectoryInfo();
+	}
+
+	private void GenerateDirectoryInfo()
+	{
+		currentDirectories = Directory.GetDirectories(CurrentDirectory);
+		currentFiles = Directory.GetFiles(CurrentDirectory);
+		currentPath = CurrentDirectory.Split(Path.DirectorySeparatorChar);
 	}
 
 	public override void Update(GameTime gameTime)
