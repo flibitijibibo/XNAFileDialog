@@ -219,10 +219,156 @@ public sealed class XNAFileDialog : DrawableGameComponent
 
 	public override void Draw(GameTime gameTime)
 	{
-		spriteBatch.Begin();
-		// TODO: Draw all widgets based on spritesheet info
-		spriteBatch.Draw(spriteSheet, Vector2.Zero, Color.White);
-		spriteBatch.DrawString(spriteFont, "Placeholder~", Vector2.Zero, Color.White);
+		// TODO: Make these variables not dumb
+		int totalWidth = 800;
+		int totalHeight = 600;
+		int startPosX = 0;
+		int startPosY = 0;
+
+		// IT BEGINS
+		spriteBatch.Begin(
+			SpriteSortMode.Deferred,
+			BlendState.AlphaBlend,
+			SamplerState.PointClamp,
+			DepthStencilState.None,
+			RasterizerState.CullNone
+		);
+
+		// Window Color
+		Rectangle borderRect = new Rectangle(
+			startPosX + spriteRects[2].Width,
+			startPosY + spriteRects[2].Height,
+			totalWidth - (spriteRects[2].Width * 2),
+			totalHeight - (spriteRects[2].Height * 2)
+		);
+		spriteBatch.Draw(
+			spriteSheet,
+			borderRect,
+			spriteRects[0],
+			Color.White,
+			0.0f,
+			Vector2.Zero,
+			SpriteEffects.None,
+			0.0f
+		);
+		// Top Left Border Corner
+		Vector2 curPos = new Vector2(startPosX, startPosY);
+		spriteBatch.Draw(
+			spriteSheet,
+			curPos,
+			spriteRects[1],
+			Color.White,
+			0.0f,
+			Vector2.Zero,
+			Vector2.One,
+			SpriteEffects.None,
+			0.0f
+		);
+		// Top Right Border Corner
+		curPos.X = totalWidth - spriteRects[1].Width;
+		spriteBatch.Draw(
+			spriteSheet,
+			curPos,
+			spriteRects[1],
+			Color.White,
+			0.0f,
+			Vector2.Zero,
+			Vector2.One,
+			SpriteEffects.FlipHorizontally,
+			0.0f
+		);
+		// Bottom Right Border Corner
+		curPos.Y = totalHeight - spriteRects[1].Height;
+		spriteBatch.Draw(
+			spriteSheet,
+			curPos,
+			spriteRects[1],
+			Color.White,
+			0.0f,
+			Vector2.Zero,
+			Vector2.One,
+			SpriteEffects.FlipHorizontally | SpriteEffects.FlipVertically,
+			0.0f
+		);
+		// Bottom Left Border Corner
+		curPos.X -= totalWidth - spriteRects[1].Width;
+		spriteBatch.Draw(
+			spriteSheet,
+			curPos,
+			spriteRects[1],
+			Color.White,
+			0.0f,
+			Vector2.Zero,
+			Vector2.One,
+			SpriteEffects.FlipVertically,
+			0.0f
+		);
+		// Top Border
+		borderRect.X = startPosX + spriteRects[1].Width;
+		borderRect.Y = startPosY;
+		borderRect.Width = totalWidth - (spriteRects[1].Width * 2);
+		borderRect.Height = spriteRects[2].Height;
+		spriteBatch.Draw(
+			spriteSheet,
+			borderRect,
+			spriteRects[2],
+			Color.White,
+			0.0f,
+			Vector2.Zero,
+			SpriteEffects.None,
+			0.0f
+		);
+		// Bottom Border
+		borderRect.Y = totalHeight - spriteRects[2].Height;
+		spriteBatch.Draw(
+			spriteSheet,
+			borderRect,
+			spriteRects[2],
+			Color.White,
+			0.0f,
+			Vector2.Zero,
+			SpriteEffects.None,
+			0.0f
+		);
+		// Left Border
+		borderRect.X = startPosY + spriteRects[1].Height;
+		borderRect.Y = startPosX + spriteRects[1].Width;
+		borderRect.Width = totalHeight - (spriteRects[1].Height * 2);
+		borderRect.Height = spriteRects[2].Width;
+		spriteBatch.Draw(
+			spriteSheet,
+			borderRect,
+			spriteRects[2],
+			Color.White,
+			MathHelper.PiOver2,
+			Vector2.Zero,
+			SpriteEffects.None,
+			0.0f
+		);
+		// Right Border
+		borderRect.X = totalWidth;
+		spriteBatch.Draw(
+			spriteSheet,
+			borderRect,
+			spriteRects[2],
+			Color.White,
+			MathHelper.PiOver2,
+			Vector2.Zero,
+			SpriteEffects.None,
+			0.0f
+		);
+
+		// HELLO PLACEHOLDER HOW ARE YOU TODAY
+		curPos.X = 0;
+		curPos.Y = spriteBatch.GraphicsDevice.PresentationParameters.BackBufferHeight - 64;
+		spriteBatch.DrawString(
+			spriteFont,
+			currentDirectories.Length + " " + currentFiles[0] + " " + currentPath[1],
+			curPos,
+			Color.White
+		);
+
+		// We out.
 		spriteBatch.End();
 	}
 
