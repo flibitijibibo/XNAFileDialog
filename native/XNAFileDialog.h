@@ -46,7 +46,7 @@ typedef void* (DELEGATECALL *XNAFileDialog_CreateTexture)(
 typedef void (DELEGATECALL *XNAFileDialog_BufferData)(void*, int, void*, int);
 
 typedef void (DELEGATECALL *XNAFileDialog_DrawPrimitives)(
-	int, int, int, int, int, int, int
+	int, int, int, int, int, int, int, int
 );
 
 typedef void (DELEGATECALL *XNAFileDialog_ReceivePath)(const char*);

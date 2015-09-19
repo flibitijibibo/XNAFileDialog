@@ -83,6 +83,12 @@ int XNAFileDialog_EventFilter(void *whatever, SDL_Event *event)
 		io.KeyAlt = (SDL_GetModState() & KMOD_ALT) != 0;
 		return 0;
 	}
+	if (event->type == SDL_QUIT)
+	{
+		// Oh crap, we need to get out of here!
+		receive("");
+		return 1;
+	}
 	return 1;
 }
 #else
@@ -92,6 +98,8 @@ int XNAFileDialog_EventFilter(void *whatever, SDL_Event *event)
 /* BEGIN PLATFORM HEADERS/DECLARATIONS */
 
 /* BEGIN PUBLIC API IMPLEMENTATION */
+
+static ImGuiFs::Dialog dialog;
 
 void XNAFileDialog_Init(
 	XNAFileDialog_CreateTexture createTexture,
@@ -142,11 +150,17 @@ void XNAFileDialog_Init(
 	io.KeyMap[ImGuiKey_Y] = SDLK_y;
 	io.KeyMap[ImGuiKey_Z] = SDLK_z;
 
+	/* Display Size */
+	io.DisplaySize = ImVec2(1280.0f, 720.0f); // FIXME: ARBITRARY!
+
 	/* SDL Events */
 	SDL_SetEventFilter(XNAFileDialog_EventFilter, NULL);
 #else
 #error Win32/XNA4 backend? -flibit
 #endif
+
+	ImGui::NewFrame();
+	dialog.chooseFileDialog(true);
 }
 
 void XNAFileDialog_Shutdown()
@@ -164,6 +178,8 @@ void XNAFileDialog_Update()
 	ImGuiIO& io = ImGui::GetIO();
 
 #ifdef PLATFORM_FNA
+	SDL_PumpEvents();
+
 	/* Update Timestep
 	 * FIXME: Use GameTime instead? -flibit
 	 */
@@ -190,15 +206,12 @@ void XNAFileDialog_Update()
 #error Win32/XNA4 backend? -flibit
 #endif
 
-	/* TODO: FileSystemDialog */
-	static ImGuiFs::Dialog dialog;
-	dialog.chooseFileDialog(true);
+	ImGui::NewFrame();
+	dialog.chooseFileDialog(false);
 	if (strlen(dialog.getChosenPath()) > 0)
 	{
 		receive(dialog.getChosenPath());
 	}
-
-	ImGui::NewFrame();
 }
 
 void XNAFileDialog_Render()
@@ -280,9 +293,10 @@ void XNAFileDialog_RenderDrawLists(ImDrawData *draw_data)
 				cmd->ClipRect.y,
 				cmd->ClipRect.z,
 				cmd->ClipRect.w,
-				cmd->ElemCount,
+				curVertOffset,
+				cmdList->VtxBuffer.size(),
 				curIndexOffset,
-				curVertOffset
+				cmd->ElemCount
 			);
 			curIndexOffset += cmd->ElemCount;
 		}

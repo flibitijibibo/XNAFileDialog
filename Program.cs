@@ -17,27 +17,26 @@ class Program : Game
 		gdm.PreferredBackBufferHeight = 720;
 	}
 
-	protected override void LoadContent()
-	{
-		XNAFileDialog.LoadDialogAssets(this, "");
-		XNAFileDialog.CurrentDirectory = AppDomain.CurrentDomain.BaseDirectory;
-	}
-
-	protected override void UnloadContent()
-	{
-		XNAFileDialog.UnloadDialogAssets();
-	}
-
+	private bool wasDown = false;
 	protected override void Update(GameTime gameTime)
 	{
 		KeyboardState state = Keyboard.GetState();
 		if (state.IsKeyDown(Keys.S))
 		{
-			XNAFileDialog.Open(SaveFile);
+			if (!wasDown)
+			{
+				wasDown = true;
+				IsMouseVisible = true;
+				XNAFileDialog.GraphicsDevice = GraphicsDevice;
+				if (XNAFileDialog.ShowDialogSynchronous())
+				{
+					System.Console.WriteLine(XNAFileDialog.Path);
+				}
+			}
 		}
-		else if (state.IsKeyDown(Keys.L))
+		else if (wasDown)
 		{
-			XNAFileDialog.Open(LoadFile);
+			wasDown = false;
 		}
 	}
 
