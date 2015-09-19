@@ -160,7 +160,15 @@ void XNAFileDialog_Init(
 #endif
 
 	ImGui::NewFrame();
-	dialog.chooseFileDialog(true);
+	dialog.chooseFileDialog(
+		true,
+		NULL,
+		NULL,
+		NULL,
+		io.DisplaySize,
+		ImVec2(-1.0f, -1.0f),
+		1.0f // FIXME: Maybe _some_ alpha? -flibit
+	);
 }
 
 void XNAFileDialog_Shutdown()

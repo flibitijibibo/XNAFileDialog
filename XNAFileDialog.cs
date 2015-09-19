@@ -82,7 +82,7 @@ public static class XNAFileDialog
 		// Time to block, yayyyyy
 		do
 		{
-			GraphicsDevice.Clear(Color.Red);
+			GraphicsDevice.Clear(Color.Blue);
 			XNAFileDialog_Update();
 			XNAFileDialog_Render();
 			GraphicsDevice.Present();
