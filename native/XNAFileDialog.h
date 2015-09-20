@@ -55,7 +55,11 @@ EXPORTFN void XNAFileDialog_Init(
 	XNAFileDialog_CreateTexture createTexture,
 	XNAFileDialog_BufferData bufferData,
 	XNAFileDialog_DrawPrimitives drawPrimitives,
-	XNAFileDialog_ReceivePath receivePath
+	XNAFileDialog_ReceivePath receivePath,
+	const char *startDirectory,
+	int width,
+	int height,
+	bool saveWarning
 );
 
 EXPORTFN void XNAFileDialog_Shutdown();

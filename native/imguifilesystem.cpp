@@ -622,10 +622,12 @@ public:
         static const char folder[][MAX_FILENAME_BYTES] = {
             "Desktop",
             "Documents",
-            "Downloads",
+            "Downloads"
+            /* FIXME: Expose this to the user! -flibit
             "Music",
             "Pictures",
             "Videos"
+            */
         };
         static const int folderSize = sizeof(folder)/sizeof(folder[0]);
         rv.reserve(folderSize+1);
@@ -1110,7 +1112,11 @@ const char* ChooseFileMainMethod(Dialog& ist,const char* directory,const bool _i
         //fprintf(stderr,"screenSize = %f,%f mousePos = %f,%f wndPos = %f,%f wndSize = %f,%f\n",screenSize.x,screenSize.y,mousePos.x,mousePos.y,wndPos.x,wndPos.y,wndSize.x,wndSize.y);
         if (I.detectKnownDirectoriesAtEveryOpening) pUserKnownDirectories = &Directory::GetUserKnownDirectories(&pUserKnownDirectoryDisplayNames,&pNumberKnownUserDirectoriesExceptDrives,true);
     }
-    if (!I.open) return rv;
+    if (!I.open) {
+        /* FIXME: How should we really deal with this? -flibit */
+        strcpy(rv, "INTERNAL_WINDOW_CLOSED");
+        return rv;
+    }
 
     if (I.forceRescan)    {
         I.forceRescan = false;
@@ -1151,15 +1157,19 @@ const char* ChooseFileMainMethod(Dialog& ist,const char* directory,const bool _i
 #       endif //DEBUG_HISTORY
     }
 
+    /* FIXME: Expose resizability to the API! -flibit */
+    /* FIXME: Expose movability to the API! -flibit */
     if (I.rescan) {
         I.rescan = false; // Mandatory
 
-        ImGui::Begin(I.wndTitle, &I.open, I.wndSize,windowAlpha);
+        ImGui::Begin(I.wndTitle, &I.open, I.wndSize,windowAlpha,
+                     ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
         ImGui::SetWindowPos(I.wndPos);
         ImGui::SetWindowSize(I.wndSize);
         //fprintf(stderr,"\"%s\" wndPos={%1.2f,%1.2f}\n",wndTitle.c_str(),wndPos.x,wndPos.y);
     }
-    else ImGui::Begin(I.wndTitle, &I.open,ImVec2(0,0),windowAlpha);
+    else ImGui::Begin(I.wndTitle, &I.open,ImVec2(0,0),windowAlpha,
+                      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
     ImGui::Separator();
 
     //------------------------------------------------------------------------------------
@@ -1330,7 +1340,7 @@ const char* ChooseFileMainMethod(Dialog& ist,const char* directory,const bool _i
     if (I.allowKnownDirectoriesSection && pUserKnownDirectories->size()>0)  {
         ImGui::Separator();
 
-        if (ImGui::CollapsingHeader("Known Directories##UserKnownDirectories"))  {
+        if (ImGui::CollapsingHeader("Known Directories##UserKnownDirectories", NULL, true, true))  {
             static int id;
             ImGui::PushID(&id);
 
@@ -1373,7 +1383,7 @@ const char* ChooseFileMainMethod(Dialog& ist,const char* directory,const bool _i
 
             ImGui::InputText("##createNewFolderName",&I.newDirectoryName[0],MAX_FILENAME_BYTES);
             ImGui::SameLine();
-            mustCreate = ImGui::Button("CREATE");
+            mustCreate = ImGui::Button("Create");
 
             ImGui::PopID();
         }

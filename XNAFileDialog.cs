@@ -42,7 +42,9 @@ public static class XNAFileDialog
 
 	public static string Path;
 
-	public static bool ShowDialogSynchronous()
+	public static string StartDirectory;
+
+	public static bool ShowDialogSynchronous(bool saveWarning = false)
 	{
 		Path = null;
 
@@ -51,48 +53,52 @@ public static class XNAFileDialog
 			CreateTextureDelegate,
 			BufferDataDelegate,
 			DrawPrimitivesDelegate,
-			ReceivePathDelegate
+			ReceivePathDelegate,
+			StartDirectory,
+			GraphicsDevice.PresentationParameters.BackBufferWidth,
+			GraphicsDevice.PresentationParameters.BackBufferHeight,
+			saveWarning
 		);
 
 		// Store previous GL state
 		Rectangle prevScissor = GraphicsDevice.ScissorRectangle;
 		Texture prevTexture = GraphicsDevice.Textures[0];
 		SamplerState prevSampler = GraphicsDevice.SamplerStates[0];
+		BlendState prevBlend = GraphicsDevice.BlendState;
+		DepthStencilState prevDepthStencil = GraphicsDevice.DepthStencilState;
+		RasterizerState prevRasterizer = GraphicsDevice.RasterizerState;
 		VertexBufferBinding[] prevVerts = GraphicsDevice.GetVertexBuffers();
 		IndexBuffer prevIndex = GraphicsDevice.Indices;
+
+		// Set new GL state
 		GraphicsDevice.Textures[0] = texture;
 		GraphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;
-
-		// BULLSHIT GOES HERE
-		SpriteBatch f = new SpriteBatch(GraphicsDevice);
-		f.Begin(
-			SpriteSortMode.Deferred,
-			BlendState.NonPremultiplied,
-			SamplerState.LinearWrap,
-			DepthStencilState.None,
-			RasterizerState.CullNone
-		);
-		f.End();
-		RasterizerState rs = new RasterizerState();
-		rs.CullMode = CullMode.None;
-		rs.MultiSampleAntiAlias = false;
-		rs.ScissorTestEnable = true;
-		GraphicsDevice.RasterizerState = rs;
+		GraphicsDevice.BlendState = BlendState.NonPremultiplied;
+		GraphicsDevice.DepthStencilState = DepthStencilState.None;
+		GraphicsDevice.RasterizerState = new RasterizerState()
+		{
+			CullMode = CullMode.None,
+			MultiSampleAntiAlias = false,
+			ScissorTestEnable = true
+		}; // FIXME: Dispose this in case XNA4 cares... -flibit
 
 		// Time to block, yayyyyy
+		pathSent = false;
 		do
 		{
-			GraphicsDevice.Clear(Color.Blue);
+			GraphicsDevice.Clear(Color.Black);
 			XNAFileDialog_Update();
 			XNAFileDialog_Render();
 			GraphicsDevice.Present();
-		} while (Path == null);
-		f.Dispose();
+		} while (!pathSent);
 
 		// Restore GL state
 		GraphicsDevice.ScissorRectangle = prevScissor;
 		GraphicsDevice.Textures[0] = prevTexture;
 		GraphicsDevice.SamplerStates[0] = prevSampler;
+		GraphicsDevice.BlendState = prevBlend;
+		GraphicsDevice.DepthStencilState = prevDepthStencil;
+		GraphicsDevice.RasterizerState = prevRasterizer;
 		GraphicsDevice.SetVertexBuffers(prevVerts);
 		GraphicsDevice.Indices = prevIndex;
 
@@ -106,7 +112,7 @@ public static class XNAFileDialog
 		indexBuffer = null;
 		indexBufferSize = 0;
 		XNAFileDialog_Shutdown();
-		return Path != null;
+		return !String.IsNullOrEmpty(Path);
 	}
 
 	#endregion
@@ -119,22 +125,16 @@ public static class XNAFileDialog
 		int width,
 		int height
 	) {
-		/* FIXME: Stupid texture alpha's not right -flibit
 		texture = new Texture2D(
 			GraphicsDevice,
 			width,
 			height,
 			false,
-			SurfaceFormat.Alpha8
+			SurfaceFormat.Color
 		);
-		byte[] pixels = new byte[width * height];
+		byte[] pixels = new byte[width * height * 4];
 		Marshal.Copy(bytes, pixels, 0, pixels.Length);
 		texture.SetData(pixels);
-		*/
-		using (FileStream fileIn = new FileStream("FileDialogTexture.png", FileMode.Open))
-		{
-			texture = Texture2D.FromStream(GraphicsDevice, fileIn);
-		}
 		return new IntPtr(texture.GetHashCode());
 	}
 
@@ -247,10 +247,12 @@ public static class XNAFileDialog
 
 	#region Internal Path Assignment Callback
 
+	private static bool pathSent;
 	private static void ReceivePath(IntPtr path)
 	{
 		// FIXME: UTF8?! -flibit
 		Path = Marshal.PtrToStringAnsi(path);
+		pathSent = true;
 	}
 
 	#endregion
@@ -294,7 +296,12 @@ public static class XNAFileDialog
 		XNAFileDialog_CreateTexture createTexture,
 		XNAFileDialog_BufferData bufferData,
 		XNAFileDialog_DrawPrimitives drawPrimitives,
-		XNAFileDialog_ReceivePath receivePath
+		XNAFileDialog_ReceivePath receivePath,
+		[MarshalAs(UnmanagedType.LPStr)]
+			string startDirectory,
+		int width,
+		int height,
+		bool saveWarning
 	);
 
 	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]

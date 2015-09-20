@@ -9,12 +9,27 @@ using Microsoft.Xna.Framework.Graphics;
 
 class Program : Game
 {
+	private const string startTest = "/home/flibitijibibo/.local/share/TowerFall/";
+
+	private SpriteBatch spriteBatch;
+
 	private Program() : base()
 	{
 		GraphicsDeviceManager gdm = new GraphicsDeviceManager(this);
 		gdm.PreparingDeviceSettings += PrepareDeviceSettings;
 		gdm.PreferredBackBufferWidth = 1280;
 		gdm.PreferredBackBufferHeight = 720;
+	}
+
+	protected override void LoadContent()
+	{
+		spriteBatch = new SpriteBatch(GraphicsDevice);
+	}
+
+	protected override void UnloadContent()
+	{
+		spriteBatch.Dispose();
+		spriteBatch = null;
 	}
 
 	private bool wasDown = false;
@@ -28,7 +43,8 @@ class Program : Game
 				wasDown = true;
 				IsMouseVisible = true;
 				XNAFileDialog.GraphicsDevice = GraphicsDevice;
-				if (XNAFileDialog.ShowDialogSynchronous())
+				XNAFileDialog.StartDirectory = startTest;
+				if (XNAFileDialog.ShowDialogSynchronous(true))
 				{
 					System.Console.WriteLine(XNAFileDialog.Path);
 				}
@@ -43,6 +59,9 @@ class Program : Game
 	protected override void Draw(GameTime gameTime)
 	{
 		GraphicsDevice.Clear(ClearOptions.Target, Vector4.Zero, 1.0f, 0);
+		spriteBatch.Begin();
+		// Some nonsense I'm sure...
+		spriteBatch.End();
 		base.Draw(gameTime);
 	}
 

@@ -36,6 +36,7 @@
 
 /* BEGIN INTERNAL FUNCTION/VARIABLE DECLARATIONS */
 
+bool save;
 XNAFileDialog_ReceivePath receive;
 XNAFileDialog_BufferData buffer;
 XNAFileDialog_DrawPrimitives render;
@@ -99,20 +100,31 @@ int XNAFileDialog_EventFilter(void *whatever, SDL_Event *event)
 
 /* BEGIN PUBLIC API IMPLEMENTATION */
 
-static ImGuiFs::Dialog dialog;
+static ImGuiFs::Dialog dialog(
+	false,
+	false,
+	true,
+	false,
+	false,
+	false
+);
 
 void XNAFileDialog_Init(
 	XNAFileDialog_CreateTexture createTexture,
 	XNAFileDialog_BufferData bufferData,
 	XNAFileDialog_DrawPrimitives drawPrimitives,
-	XNAFileDialog_ReceivePath receivePath
+	XNAFileDialog_ReceivePath receivePath,
+	const char *startDirectory,
+	int width,
+	int height,
+	bool saveWarning
 ) {
 	/* Font Texture */
 	ImGuiIO& io = ImGui::GetIO();
 	unsigned char *pixels;
-	int width, height;
-	io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
-	io.Fonts->TexID = createTexture(pixels, width, height);
+	int pixW, pixH;
+	io.Fonts->GetTexDataAsRGBA32(&pixels, &pixW, &pixH);
+	io.Fonts->TexID = createTexture(pixels, pixW, pixH);
 	io.Fonts->ClearInputData();
 	io.Fonts->ClearTexData();
 
@@ -151,7 +163,7 @@ void XNAFileDialog_Init(
 	io.KeyMap[ImGuiKey_Z] = SDLK_z;
 
 	/* Display Size */
-	io.DisplaySize = ImVec2(1280.0f, 720.0f); // FIXME: ARBITRARY!
+	io.DisplaySize = ImVec2((float) width, (float) height);
 
 	/* SDL Events */
 	SDL_SetEventFilter(XNAFileDialog_EventFilter, NULL);
@@ -160,15 +172,35 @@ void XNAFileDialog_Init(
 #endif
 
 	ImGui::NewFrame();
-	dialog.chooseFileDialog(
-		true,
-		NULL,
-		NULL,
-		NULL,
-		io.DisplaySize,
-		ImVec2(-1.0f, -1.0f),
-		1.0f // FIXME: Maybe _some_ alpha? -flibit
-	);
+	save = saveWarning;
+	const char *start = (startDirectory != NULL) ?
+		startDirectory :
+		dialog.getLastDirectory();
+	if (saveWarning)
+	{
+		dialog.saveFileDialog(
+			true,
+			start,
+			NULL,
+			NULL,
+			NULL,
+			io.DisplaySize,
+			ImVec2(-1.0f, -1.0f),
+			1.0f /* FIXME: Maybe _some_ alpha? -flibit */
+		);
+	}
+	else
+	{
+		dialog.chooseFileDialog(
+			true,
+			start,
+			NULL,
+			NULL,
+			io.DisplaySize,
+			ImVec2(-1.0f, -1.0f),
+			1.0f /* FIXME: Maybe _some_ alpha? -flibit */
+		);
+	}
 }
 
 void XNAFileDialog_Shutdown()
@@ -215,10 +247,24 @@ void XNAFileDialog_Update()
 #endif
 
 	ImGui::NewFrame();
-	dialog.chooseFileDialog(false);
+	if (save)
+	{
+		dialog.saveFileDialog(false);
+	}
+	else
+	{
+		dialog.chooseFileDialog(false);
+	}
 	if (strlen(dialog.getChosenPath()) > 0)
 	{
-		receive(dialog.getChosenPath());
+		if (strcmp(dialog.getChosenPath(), "INTERNAL_WINDOW_CLOSED") == 0)
+		{
+			receive(NULL);
+		}
+		else
+		{
+			receive(dialog.getChosenPath());
+		}
 	}
 }
 
