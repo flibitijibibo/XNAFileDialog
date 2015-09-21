@@ -44,7 +44,7 @@ class Program : Game
 				IsMouseVisible = true;
 				XNAFileDialog.GraphicsDevice = GraphicsDevice;
 				XNAFileDialog.StartDirectory = startTest;
-				if (XNAFileDialog.ShowDialogSynchronous(true))
+				if (XNAFileDialog.ShowDialogSynchronous("Choose a .txt file!", "startFile.txt"))
 				{
 					System.Console.WriteLine(XNAFileDialog.Path);
 				}

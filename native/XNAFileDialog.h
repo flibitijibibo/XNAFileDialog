@@ -57,9 +57,10 @@ EXPORTFN void XNAFileDialog_Init(
 	XNAFileDialog_DrawPrimitives drawPrimitives,
 	XNAFileDialog_ReceivePath receivePath,
 	const char *startDirectory,
+	const char *startFile,
+	const char *windowTitle,
 	int width,
-	int height,
-	bool saveWarning
+	int height
 );
 
 EXPORTFN void XNAFileDialog_Shutdown();

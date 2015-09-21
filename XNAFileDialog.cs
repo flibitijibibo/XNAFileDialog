@@ -44,7 +44,7 @@ public static class XNAFileDialog
 
 	public static string StartDirectory;
 
-	public static bool ShowDialogSynchronous(bool saveWarning = false)
+	public static bool ShowDialogSynchronous(string title = null, string saveFile = null)
 	{
 		Path = null;
 
@@ -55,9 +55,10 @@ public static class XNAFileDialog
 			DrawPrimitivesDelegate,
 			ReceivePathDelegate,
 			StartDirectory,
+			saveFile,
+			title,
 			GraphicsDevice.PresentationParameters.BackBufferWidth,
-			GraphicsDevice.PresentationParameters.BackBufferHeight,
-			saveWarning
+			GraphicsDevice.PresentationParameters.BackBufferHeight
 		);
 
 		// Store previous GL state
@@ -75,12 +76,7 @@ public static class XNAFileDialog
 		GraphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;
 		GraphicsDevice.BlendState = BlendState.NonPremultiplied;
 		GraphicsDevice.DepthStencilState = DepthStencilState.None;
-		GraphicsDevice.RasterizerState = new RasterizerState()
-		{
-			CullMode = CullMode.None,
-			MultiSampleAntiAlias = false,
-			ScissorTestEnable = true
-		}; // FIXME: Dispose this in case XNA4 cares... -flibit
+		GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
 		// Time to block, yayyyyy
 		pathSent = false;
@@ -299,9 +295,12 @@ public static class XNAFileDialog
 		XNAFileDialog_ReceivePath receivePath,
 		[MarshalAs(UnmanagedType.LPStr)]
 			string startDirectory,
+		[MarshalAs(UnmanagedType.LPStr)]
+			string startFile,
+		[MarshalAs(UnmanagedType.LPStr)]
+			string windowTitle,
 		int width,
-		int height,
-		bool saveWarning
+		int height
 	);
 
 	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]

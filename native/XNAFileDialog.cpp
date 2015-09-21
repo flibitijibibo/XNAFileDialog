@@ -115,9 +115,10 @@ void XNAFileDialog_Init(
 	XNAFileDialog_DrawPrimitives drawPrimitives,
 	XNAFileDialog_ReceivePath receivePath,
 	const char *startDirectory,
+	const char *startFile,
+	const char *windowTitle,
 	int width,
-	int height,
-	bool saveWarning
+	int height
 ) {
 	/* Font Texture */
 	ImGuiIO& io = ImGui::GetIO();
@@ -172,18 +173,18 @@ void XNAFileDialog_Init(
 #endif
 
 	ImGui::NewFrame();
-	save = saveWarning;
+	save = startFile != NULL;
 	const char *start = (startDirectory != NULL) ?
 		startDirectory :
 		dialog.getLastDirectory();
-	if (saveWarning)
+	if (save)
 	{
 		dialog.saveFileDialog(
 			true,
 			start,
+			startFile,
 			NULL,
-			NULL,
-			NULL,
+			windowTitle,
 			io.DisplaySize,
 			ImVec2(-1.0f, -1.0f),
 			1.0f /* FIXME: Maybe _some_ alpha? -flibit */
@@ -195,7 +196,7 @@ void XNAFileDialog_Init(
 			true,
 			start,
 			NULL,
-			NULL,
+			windowTitle,
 			io.DisplaySize,
 			ImVec2(-1.0f, -1.0f),
 			1.0f /* FIXME: Maybe _some_ alpha? -flibit */
