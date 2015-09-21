@@ -120,8 +120,13 @@ void XNAFileDialog_Init(
 	int width,
 	int height
 ) {
-	/* Font Texture */
 	ImGuiIO& io = ImGui::GetIO();
+
+	/* Get rid of ImGui-generated files */
+	io.IniFilename = NULL;
+	io.LogFilename = NULL;
+
+	/* Font Texture */
 	unsigned char *pixels;
 	int pixW, pixH;
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &pixW, &pixH);
