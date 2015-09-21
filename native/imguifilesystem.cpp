@@ -26,6 +26,7 @@
 #       define CSIDL_MYVIDEO 0x000e
 #   endif //CSIDL_MYVIDEO
 #else // _WIN32
+#   include <limits.h>     // PATH_MAX
 #   include <unistd.h>     // getpwuid
 #   include <pwd.h>        // getenv ?
 #endif //#ifdef _WIN32
